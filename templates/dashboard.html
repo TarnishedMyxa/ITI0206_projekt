@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .section {
+            background-color: #ffffff;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 250px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .section p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        {% if 'hr' in user_access %}
+            <div class="section">
+                <div class="section-title">HR</div>
+                <p>HR user has access to HR section.</p>
+            </div>
+        {% endif %}
+        
+        {% if 'saabumised' in user_access %}
+            <div class="section">
+                <div class="section-title">Saabumised</div>
+                <p>User has access to Saabumised section.</p>
+            </div>
+        {% endif %}
+
+        {% if 'kvaliteedikontroll' in user_access %}
+            <div class="section">
+                <div class="section-title">Kvaliteedikontroll</div>
+                <p>User has access to Kvaliteedikontroll section.</p>
+            </div>
+        {% endif %}
+        
+        {% if 'ladu' in user_access %}
+            <div class="section">
+                <div class="section-title">Ladu</div>
+                <p>User has access to Ladu section.</p>
+            </div>
+        {% endif %}
+
+        {% if 'liikumine' in user_access %}
+            <div class="section">
+                <div class="section-title">Liikumine</div>
+                <p>User has access to Liikumine section.</p>
+            </div>
+        {% endif %}
+        
+        {% if user_access|length == 0 %}
+            <p class="error-message">Access Denied: You don't have any sections available.</p>
+        {% endif %}
+    </div>
+</body>
+</html>
