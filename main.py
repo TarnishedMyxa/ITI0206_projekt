@@ -36,6 +36,12 @@ CORS(app)
 app.secret_key = os.getenv("app_secret_key")
 
 
+users={
+    'admin': 'admin123',
+    'user': 'user123'
+}
+
+
 logger.info('APPLICATION STARTED')
 
 @app.route('/')
@@ -52,19 +58,54 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        users=None  #get users from database!!!
+        #users=None  #get users from database!!!
 
         # Check if user exists and password matches
         if users.get(username) == password:
+            session['username'] = username
             return redirect(url_for('dashboard'))
         else:
             return 'Invalid credentials, please try again.'
 
     return render_template('login.html')
 
-@app.route('/dashboard/<user_type>')
-def dashboard(user_type):
-    return render_template('dashboard.html', user_type=user_type)
+@app.route('/dashboard/')
+def dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    user_type="admin"
+    ua=["hr","saabumised"]
+    return render_template('dashboard.html', user_type=user_type, user_access=ua)
+
+
+@app.raoute('/usermanagement/')
+def user_management():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    user_type="admin"
+    ua=["hr","saabumised"]
+    return render_template('user_management.html', user_type=user_type, user_access=ua)
+
+@app.route('/transfer/')
+def transfer():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    user_type="admin"
+    ua=["hr","saabumised"]
+    return render_template('transfer.html', user_type=user_type, user_access=ua)
+
+@app.route('/move/')
+def move():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    user_type="admin"
+    ua=["hr","saabumised"]
+    return render_template('move.html', user_type=user_type, user_access=ua)
+
+@app.route('/logout/')
+def logout():
+    session.pop('username', None)
+    return redirect(url_for('login'))
 
 if __name__ == '__main__':
     if ENVIROP=='PROD':

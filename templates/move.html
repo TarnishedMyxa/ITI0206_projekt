@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Inventory Movement</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .section {
+            background-color: #ffffff;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .section p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        input, select, button {
+            width: 90%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            border: none;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="section">
+            <h2>Move Inventory Item</h2>
+            <form id="inventory-move-form">
+                <div class="section-title">Select Item</div>
+                <select name="item" required>
+                    <option value="">-- Select an Item --</option>
+                    <option value="item1">Item 1</option>
+                    <option value="item2">Item 2</option>
+                    <option value="item3">Item 3</option>
+                </select>
+
+                <div class="section-title">From Location</div>
+                <select name="from_location" required>
+                    <option value="">-- Select Source --</option>
+                    <option value="warehouse1">Warehouse 1</option>
+                    <option value="warehouse2">Warehouse 2</option>
+                </select>
+
+                <div class="section-title">To Location</div>
+                <select name="to_location" required>
+                    <option value="">-- Select Destination --</option>
+                    <option value="warehouse1">Warehouse 1</option>
+                    <option value="warehouse2">Warehouse 2</option>
+                </select>
+
+                <div class="section-title">Quantity</div>
+                <input type="number" name="quantity" min="1" placeholder="Enter quantity" required>
+
+                <button type="submit">Move Item</button>
+                <p class="error-message" id="error-msg"></p>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('inventory-move-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const from = this.from_location.value;
+            const to = this.to_location.value;
+            const errorMsg = document.getElementById('error-msg');
+
+            if (from === to) {
+                errorMsg.textContent = "Source and destination cannot be the same.";
+            } else {
+                errorMsg.textContent = "";
+                alert("Item moved successfully!");
+                // Submit to backend here if needed
+                this.reset();
+            }
+        });
+    </script>
+</body>
+</html>
