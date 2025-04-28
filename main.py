@@ -42,6 +42,23 @@ users={
 }
 
 
+inventory=[{"name":"item1",
+            "idnum":"123456",
+            "bidnum":"654321",
+            "quantity": 10,
+            "batch": 1},
+              {"name":"item2",
+            "idnum":"123457",
+            "bidnum":"654322",
+            "quantity": 5,
+            "batch": 2},
+                {"name":"item3",
+            "idnum":"123458",
+            "bidnum":"654323",
+            "quantity": 20,
+                 "batch": 3},
+               ]
+
 logger.info('APPLICATION STARTED')
 
 @app.route('/')
@@ -78,7 +95,7 @@ def dashboard():
     return render_template('dashboard.html', user_type=user_type, user_access=ua)
 
 
-@app.raoute('/usermanagement/')
+@app.route('/usermanagement/')
 def user_management():
     if 'username' not in session:
         return redirect(url_for('login'))
@@ -86,13 +103,30 @@ def user_management():
     ua=["hr","saabumised"]
     return render_template('user_management.html', user_type=user_type, user_access=ua)
 
-@app.route('/transfer/')
-def transfer():
+@app.route('/view/')
+def view():
     if 'username' not in session:
         return redirect(url_for('login'))
-    user_type="admin"
-    ua=["hr","saabumised"]
-    return render_template('transfer.html', user_type=user_type, user_access=ua)
+    return render_template('view.html', inventory=inventory)
+
+@app.route('/create_transfer/', methods=['GET', 'POST'])
+def create_transfer():
+    selected_ids = request.form.getlist('selected_items')
+    
+    print(selected_ids)
+    # Optionally fetch full item info if needed
+    selected_items = [item for item in inventory if str(item["idnum"]) in selected_ids]
+
+    # Redirect or render another page showing the transfer order creation
+    return render_template('create_transfer.html', selected_items=selected_items)
+
+@app.route('/submit_transfer/', methods=['POST'])
+def submit_transfer():
+    # Process the transfer order
+    transfer_data = request.form.to_dict()
+
+    flash('Transfer order created successfully!', 'success')
+    return redirect(url_for('view'))
 
 @app.route('/move/')
 def move():

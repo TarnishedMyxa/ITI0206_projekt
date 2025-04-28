@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Current Inventory</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .section {
+            background-color: #ffffff;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .filters {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        input[type="text"], select {
+            padding: 8px;
+            width: 200px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="section">
+        <h2>Current Inventory</h2>
+
+        <div class="filters">
+			<input type="text" id="searchInput" placeholder="Search by item name or batch...">
+		</div>
+
+        <form id="inventory-form" method="POST" action="{{ url_for('create_transfer') }}">
+            <table id="inventoryTable">
+                <thead>
+                    <tr>
+                        <th>Select</th>
+						<th style="display: none;">Item ID</th>
+                        <th>Item Name</th>
+						<th style="display: none;">Batch ID</th>
+                        <th>Batch</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in inventory %}
+                    <tr>
+                        <td><input type="checkbox" name="selected_items" value="{{ item.idnum }}"></td>
+						<td class="item-id" style="display: none;">{{ item.idnum }}</td>
+                        <td class="item-name">{{ item.name }}</td>
+						<td class="batch-id" style="display: none;">{{ item.bidnum }}</td>
+                        <td class="batch">{{ item.batch }}</td>
+                        <td>{{ item.quantity }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <button type="submit">Create Transfer Order</button>
+            <p class="error-message" id="error-msg"></p>
+        </form>
+    </div>
+</div>
+
+<script>
+    const searchInput = document.getElementById('searchInput');
+const table = document.getElementById('inventoryTable').getElementsByTagName('tbody')[0];
+
+function filterTable() {
+    const searchText = searchInput.value.toLowerCase();
+    const rows = table.getElementsByTagName('tr');
+
+    for (let row of rows) {
+        const itemName = row.querySelector('.item-name').textContent.toLowerCase();
+        const batchName = row.querySelector('.batch').textContent.toLowerCase();
+
+        const matches = itemName.includes(searchText) || batchName.includes(searchText);
+
+        if (matches) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    }
+}
+
+searchInput.addEventListener('input', filterTable);
+
+
+    document.getElementById('inventory-form').addEventListener('submit', function (e) {
+    const selectedCheckboxes = document.querySelectorAll('input[name="selected_items"]:checked');
+    const errorMsg = document.getElementById('error-msg');
+
+    if (selectedCheckboxes.length === 0) {
+        e.preventDefault();
+        errorMsg.textContent = "Please select at least one item.";
+        return;
+    }
+
+    // Clear old hidden inputs if user tries to submit multiple times
+    document.querySelectorAll('.dynamic-hidden').forEach(e => e.remove());
+
+    selectedCheckboxes.forEach(checkbox => {
+        const row = checkbox.closest('tr');
+        const itemName = row.querySelector('.item-name').textContent.trim();
+        const batch = row.querySelector('.batch').textContent.trim();
+        const quantity = row.querySelector('td:nth-child(4)').textContent.trim(); // 4th cell is quantity
+
+        const form = document.getElementById('inventory-form');
+
+        // Create hidden inputs for each piece of data
+        form.appendChild(createHiddenInput('selected_item_names', itemName));
+        form.appendChild(createHiddenInput('selected_item_batches', batch));
+        form.appendChild(createHiddenInput('selected_item_quantities', quantity));
+    });
+
+    // Clear error message
+    errorMsg.textContent = "";
+});
+
+function createHiddenInput(name, value) {
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = name;
+    input.value = value;
+    input.classList.add('dynamic-hidden'); // mark it so we can remove it easily if needed
+    return input;
+}
+
+        
+    });
+</script>
+
+</body>
+</html>
