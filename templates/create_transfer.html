@@ -79,11 +79,19 @@
         <form method="POST" action="{{ url_for('submit_transfer') }}">
             <!-- Transfer Metadata -->
             <div>
+			
+				<select id="transferType" name="transfer_type" required>
+					<option value="out">Outbound (OUT)</option>
+					<option value="in">Inbound (IN)</option>
+				</select>
+			
                 <label for="transfer_date">Transfer Date:</label><br>
                 <input type="date" id="transfer_date" name="transfer_date" required><br>
 
                 <label for="destination">Destination:</label><br>
                 <input type="text" id="destination" name="destination" required>
+				
+			
             </div>
 
             <!-- Transfer Items Table -->

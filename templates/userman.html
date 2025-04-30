@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        select, button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #eee;
+        }
+
+        .actions {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .actions button {
+            width: auto;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .actions button:hover {
+            background: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>User Management</h2>
+
+    <form method="POST" action="{{ url_for('assign_access') }}">
+        <div class="section">
+            <label for="userSelect">Select Users:</label>
+            <select id="userSelect" name="selected_users" multiple required>
+                {% for user in users %}
+                    <option value="{{ user.id }}">{{ user.username }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="section">
+            <label for="accessSelect">Assign Access To:</label>
+            <select id="accessSelect" name="access_areas" multiple required>
+                {% for area in access_areas %}
+                    <option value="{{ area.id }}">{{ area.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="actions">
+            <button type="submit">Assign Access</button>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

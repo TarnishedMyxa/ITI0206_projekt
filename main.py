@@ -101,7 +101,7 @@ def user_management():
         return redirect(url_for('login'))
     user_type="admin"
     ua=["hr","saabumised"]
-    return render_template('user_management.html', user_type=user_type, user_access=ua)
+    return render_template('userman.html', user_type=user_type, user_access=ua)
 
 @app.route('/view/')
 def view():
