@@ -4,6 +4,8 @@ import json
 import os
 import datetime
 import logging
+import db
+import hashlib
 
 
 ENVIROP="LOCAL"     #PROD or LOCAL
@@ -35,29 +37,13 @@ CORS(app)
 
 app.secret_key = os.getenv("app_secret_key")
 
-
-users={
-    'admin': 'admin123',
-    'user': 'user123'
+db_creds={
+    'host': os.getenv("host"),
+    'port': int(os.getenv("port")),
+    'user': os.getenv("user"),
+    'password': os.getenv("password"),
+    'database': os.getenv("database")
 }
-
-
-inventory=[{"name":"item1",
-            "idnum":"123456",
-            "bidnum":"654321",
-            "quantity": 10,
-            "batch": 1},
-              {"name":"item2",
-            "idnum":"123457",
-            "bidnum":"654322",
-            "quantity": 5,
-            "batch": 2},
-                {"name":"item3",
-            "idnum":"123458",
-            "bidnum":"654323",
-            "quantity": 20,
-                 "batch": 3},
-               ]
 
 logger.info('APPLICATION STARTED')
 
@@ -75,16 +61,52 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        #users=None  #get users from database!!!
+        users=db.get_users(db_creds)  # users is a list of tuples where each tuple is (username, passhash)
 
-        # Check if user exists and password matches
-        if users.get(username) == password:
+        # Convert list of tuples to a dictionary for easier access
+        users = {user[0]: user[1] for user in users}
+
+        # Check if username exists
+        if username not in users:
+            flash('Invalid credentials, please try again.', 'error')
+            return redirect(url_for('login'))
+
+        # Hash the password
+        passhash= hashlib.sha256(password.encode()).hexdigest()
+        # Check if password matches
+        if users[username] == passhash:
             session['username'] = username
             return redirect(url_for('dashboard'))
         else:
-            return 'Invalid credentials, please try again.'
+            flash('Invalid credentials, please try again.', 'error')
+            return redirect(url_for('login'))
+    else:
+        if 'username' in session:
+            return redirect(url_for('main_page'))
+        return render_template('login.html')
 
-    return render_template('login.html')
+@app.route('/register_user', methods=['GET', 'POST'])
+def register_user():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+
+        users=db.get_users(db_creds)
+
+        # Check if user already exists
+        if username in users:
+            flash('User already exists!', 'error')
+            return redirect(url_for('register_user'))
+
+        # generate hash of password
+        passhash= hashlib.sha256(password.encode()).hexdigest()
+
+        # Add new user to the database
+        db.add_user(db_creds, username, passhash)
+
+        return redirect(url_for('login'))
+
+    return render_template('register_user.html')
 
 @app.route('/dashboard/')
 def dashboard():
@@ -107,6 +129,7 @@ def user_management():
 def view():
     if 'username' not in session:
         return redirect(url_for('login'))
+    inventory=[]
     return render_template('view.html', inventory=inventory)
 
 @app.route('/create_transfer/', methods=['GET', 'POST'])
@@ -115,6 +138,7 @@ def create_transfer():
     
     print(selected_ids)
     # Optionally fetch full item info if needed
+    inventory = []
     selected_items = [item for item in inventory if str(item["idnum"]) in selected_ids]
 
     # Redirect or render another page showing the transfer order creation
