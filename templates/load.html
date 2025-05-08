@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Assign User Access</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .container {
+            max-width: 600px;
+            background: white;
+            margin: auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 20px;
+            display: block;
+        }
+
+        select, input[type="checkbox"] {
+            margin-top: 10px;
+        }
+
+        .access-list {
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .access-item {
+            margin: 5px 0;
+        }
+
+        button {
+            margin-top: 25px;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .success { color: green; }
+        .error { color: red; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Assign Access to User</h2>
+	
+	<a href="{{ url_for('dashboard') }}">
+    <button type="button" style="background-color: #6c757d; margin-bottom: 15px;">
+        ← Back to Dashboard
+    </button>
+	</a>
+
+
+    <form method="POST" action="{{ url_for('usermanagement') }}">
+        <label for="username">Select User:</label>
+        <select id="username" name="username" required onchange="onUserChange(this.value)">
+            <option value="">-- Choose a user --</option>
+            {% for user in users %}
+                <option value="{{ user[0] }}">{{ user[0] }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="access">Access Areas:</label>
+  <div class="access-list">
+    {% for area in lubad %}
+      <div class="access-item">
+        <label>
+          <input
+            type="checkbox"
+            name="{{ area[0] }}"
+            value="{{ area[0] }}"
+            id="access-{{ area[0] }}"
+          >
+          {{ area[1] }}
+        </label>
+      </div>
+    {% endfor %}
+  </div>
+
+        {% if message %}
+        <div class="message {{ 'success' if success else 'error' }}">{{ message }}</div>
+        {% endif %}
+
+        <button type="submit">Assign Access</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('access-form').addEventListener('submit', function(e) {
+    // Gather all checked boxes
+    const checked = Array.from(
+      document.querySelectorAll('.access-checkbox:checked')
+    ).map(cb => cb.value);
+
+    // Put them into the hidden input as a comma-separated list (or JSON)
+    document.getElementById('selected_accesses').value = checked.join(',');
+
+    // (Optionally) you can JSON.stringify(checked) instead
+    // document.getElementById('selected_accesses').value = JSON.stringify(checked);
+  });
+ function onUserChange(username) {
+    
+    // Uncheck everything first
+    document.querySelectorAll('.access-list input[type="checkbox"]')
+      .forEach(cb => cb.checked = false);
+
+    if (!username) return;
+
+    fetch(`/get-access-rights?username=${encodeURIComponent(username)}`)
+      .then(r => r.json())
+      .then(data => {
+        
+        // Extract just the access IDs
+        const ids = data.access_rights.map(entry => {
+          // if entry is [username, id], return entry[1]
+          if (Array.isArray(entry) && entry.length > 1) {
+            return String(entry[1]);
+          }
+          // otherwise assume it's already an ID
+          return String(entry);
+        });
+        
+
+        // Toggle those checkboxes
+        ids.forEach(id => {
+          const cb = document.getElementById(`access-${id}`);
+          
+          if (cb) cb.checked = true;
+        });
+      })
+      .catch(err => console.error('fetch error', err));
+  }
+</script>
+
+
+</body>
+</html>

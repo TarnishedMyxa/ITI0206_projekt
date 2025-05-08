@@ -107,6 +107,93 @@ def add_user(db_config, username, password):
             connection.close()
 
 
+def get_load(db_config):
+    """
+    Fetch all load from the load table.
+    """
+    query = """
+        SELECT *
+        FROM lubad
+    """
+    connection = get_connection(db_config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+    except pymysql.MySQLError as e:
+        print(f"Error while fetching load: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+def get_userload(db_config, username):
+    """
+    Fetch all load for a specific user.
+    """
+    query = f"""
+        SELECT *
+        FROM userload
+        WHERE username = '{escape_string(username)}'
+    """
+    connection = get_connection(db_config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+    except pymysql.MySQLError as e:
+        print(f"Error while fetching user load: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+def del_userloads(db_config, username):
+    """
+    Delete user loads in the database.
+    """
+    query= f"""
+        DELETE FROM userload
+        WHERE username = '{escape_string(username)}'
+    """
+    connection = get_connection(db_config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            connection.commit()
+            print(f"User loads for {username} deleted successfully.")
+    except pymysql.MySQLError as e:
+        print(f"Error while deleting user loads: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+def add_userloads(db_config, loads):
+
+    for load in loads:
+        add_userload(db_config, load)
+
+def add_userload(db_config, load):
+    """
+    Add new user loads to the database.
+    """
+    query = f"""
+        INSERT INTO userload (username, luba)
+        VALUES ('{escape_string(load[0])}', '{escape_string(load[1])}')
+    """
+    connection = get_connection(db_config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            connection.commit()
+            print(f"User load {load[1]} for {load[0]} added successfully.")
+    except pymysql.MySQLError as e:
+        print(f"Error while adding user load: {e}")
+    finally:
+        if connection:
+            connection.close()
+
+
 
 if __name__ == "__main__":
     pass

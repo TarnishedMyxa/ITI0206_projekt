@@ -52,6 +52,19 @@
     </style>
 </head>
 <body>
+<div style="display: flex; justify-content: flex-end; padding: 10px 20px;">
+    <form method="POST" action="{{ url_for('logout') }}">
+        <button type="submit" style="
+            background-color: #dc3545;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        ">Log Out</button>
+    </form>
+</div>
+
     <div class="dashboard-container">
         {% if 'hr' in user_access %}
             <div class="section">
