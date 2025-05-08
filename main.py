@@ -162,6 +162,73 @@ def get_access_rights():
     return jsonify({'access_rights': access_rights})
 
 
+@app.route('/items/')
+def items():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username=session['username']
+    ul=db.get_userload(db_creds, username)
+
+    access=False
+    for l in ul:
+        if l[1] in [1, 3, 4]:
+            access=True
+            break
+    if not access:
+        flash('You do not have access to this page.', 'error')
+        return redirect(url_for('dashboard'))
+
+
+    items=db.get_all_items(db_creds)
+
+    return render_template('items.html',  items=items)
+
+@app.route('/items/create', methods=['GET','POST'])
+def create_item():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Optionally repeat your access check here)
+    if request.method == 'POST':
+        # Grab fields from form:
+        nimi    = request.form['nimi']
+        staatus = request.form['staatus']
+        laius   = request.form['laius']
+        pikkus  = request.form['pikkus']
+        # Insert into DB
+        db.add_item(db_creds, nimi, staatus, laius, pikkus)
+        return redirect(url_for('items'))
+    # GET → show empty form
+    return render_template('item_form.html', item=None)
+
+@app.route('/items/edit/<int:idnum>', methods=['GET','POST'])
+def edit_item(idnum):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Access check)
+    item = db.get_item(db_creds, idnum)
+    if request.method == 'POST':
+        item.nimi    = request.form['nimi']
+        item.staatus = request.form['staatus']
+        item.laius   = request.form['laius']
+        item.pikkus  = request.form['pikkus']
+        db.update_item(db_creds, item)
+        return redirect(url_for('items'))
+    # GET → show form prefilled
+    return render_template('item_form.html', item=item)
+
+@app.route('/items/delete/<int:idnum>', methods=['POST'])
+def delete_item(idnum):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Access check)
+    db.delete_item(db_creds, idnum)
+    return redirect(url_for('items'))
+
+
+
+
+
 @app.route('/view/')
 def view():
     if 'username' not in session:

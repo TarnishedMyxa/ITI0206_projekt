@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ 'Edit' if item else 'Create' }} Item</title>
+  <style>
+    /* Global Reset & Font */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f2f5;
+      color: #333;
+      line-height: 1.5;
+    }
+
+    /* Container */
+    .form-container {
+      max-width: 480px;
+      margin: 60px auto;
+      background: #fff;
+      padding: 30px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      font-size: 1.6rem;
+      color: #444;
+    }
+
+    /* Form Elements */
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+      color: #555;
+    }
+    input[type="text"],
+    input[type="number"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+    input:focus {
+      outline: none;
+      border-color: #007bff;
+    }
+
+    /* Button */
+    .btn {
+      margin-top: 12px;
+      padding: 12px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #fff;
+      background-color: #28a745;
+      transition: background-color 0.2s ease;
+    }
+    .btn:hover {
+      background-color: #218838;
+    }
+    .btn.cancel {
+      background-color: #6c757d;
+      margin-left: 8px;
+    }
+    .btn.cancel:hover {
+      background-color: #5a6268;
+    }
+
+    /* Button group */
+    .button-group {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 8px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .form-container {
+        margin: 20px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="form-container">
+    <h2>{{ 'Edit' if item else 'Create' }} Item</h2>
+    <form method="POST">
+      <div>
+        <label for="nimi">Nimi</label>
+        <input type="text" id="nimi" name="nimi" value="{{ item.nimi if item else '' }}" required>
+      </div>
+      <div>
+		  <label for="staatus">Staatus</label>
+		  <select id="staatus" name="staatus" required>
+			{% set status_map = {1: 'Active', 2: 'Inactive', 3: 'In Maintenance', 4: 'Decommissioned'} %}
+			{% for idnum, status in status_map.items() %}
+			  <option value="{{ idnum }}" {% if item and item.staatus == idnum %}selected{% endif %}>
+				{{ status }}
+			  </option>
+			{% endfor %}
+		  </select>
+		</div>
+
+      <div>
+        <label for="laius">Laius (mm)</label>
+        <input type="number" id="laius" name="laius" step="any" value="{{ item.laius if item else '' }}" required>
+      </div>
+      <div>
+        <label for="pikkus">Pikkus (mm)</label>
+        <input type="number" id="pikkus" name="pikkus" step="any" value="{{ item.pikkus if item else '' }}" required>
+      </div>
+
+      <div class="button-group">
+        <button type="submit" class="btn">{{ 'Update' if item else 'Create' }}</button>
+        <a href="{{ url_for('items') }}" class="btn cancel">Cancel</a>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

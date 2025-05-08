@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Item List</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f4f4; margin:0; padding:20px; }
+    .container { max-width: 1000px; margin:auto; background:white; padding:20px; border-radius:8px; box-shadow:0 4px 8px rgba(0,0,0,0.1); }
+    h2 { margin-bottom: 20px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:12px; border:1px solid #ddd; text-align:left; }
+    th { background:#eee; }
+    .actions a, .actions button {
+      display:inline-block; padding:6px 12px; margin-right:4px;
+      border:none; border-radius:4px; color:white; text-decoration:none; cursor:pointer;
+    }
+    .actions a.edit { background:#007BFF; }
+    .actions button.delete { background:#dc3545; }
+    .actions button.delete:hover { background:#c82333; }
+    .add { display:inline-block; margin-bottom:10px; background:#28a745; padding:8px 16px; border-radius:4px; color:white; text-decoration:none; }
+    .add:hover { background:#218838; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Item List</h2>
+
+  <a href="{{ url_for('create_item') }}" class="add">+ Add New Item</a>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nimi</th>
+        <th>Staatus</th>
+        <th>Laius</th>
+        <th>Pikkus</th>
+        <th>Created At</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td>{{ item.idnum }}</td>
+        <td>{{ item.nimi }}</td>
+        <td>{{ item.staatus }}</td>
+        <td>{{ item.laius }}</td>
+        <td>{{ item.pikkus }}</td>
+        <td>{{ item.created_at }}</td>
+        <td class="actions">
+          <a href="{{ url_for('edit_item', id=item.idnum) }}" class="edit">Edit</a>
+          <form method="POST"
+                action="{{ url_for('delete_item', id=item.idnum) }}"
+                style="display:inline;"
+                onsubmit="return confirm('Delete item {{ item.nimi }}?');">
+            <button type="submit" class="delete">Delete</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+</body>
+</html>

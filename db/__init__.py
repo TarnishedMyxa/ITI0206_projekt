@@ -193,6 +193,26 @@ def add_userload(db_config, load):
         if connection:
             connection.close()
 
+def get_all_items(db_config):
+    """
+    Fetch all items from the items table.
+    """
+    query = """
+        SELECT *
+        FROM tooted
+    """
+    connection = get_connection(db_config)
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            result = cursor.fetchall()
+            return result
+    except pymysql.MySQLError as e:
+        print(f"Error while fetching items: {e}")
+    finally:
+        if connection:
+            connection.close()
+
 
 
 if __name__ == "__main__":
