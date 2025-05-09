@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Asukoha Vorm</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            padding: 1rem;
+        }
+
+        h2 {
+            margin-bottom: 1rem;
+        }
+
+        form label {
+            display: block;
+            margin-top: 1rem;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 0.5rem;
+            margin-top: 0.3rem;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 1.5rem;
+            padding: 0.7rem 1.5rem;
+            background-color: #007bff;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .back {
+            margin-top: 1rem;
+            display: inline-block;
+            text-decoration: none;
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>{{ 'Muuda Asukohta' if asukoht else 'Lisa Uus Asukoht' }}</h2>
+
+    <form method="POST">
+        <label for="kood">Kood:</label>
+        <input type="text" name="kood" id="kood" value="{{ asukoht.kood if asukoht }}"  required>
+
+        <label for="laius">Laius:</label>
+        <input type="number" step="any" name="laius" id="laius" value="{{ asukoht.laius if asukoht }}" required>
+
+        <label for="pikkus">Pikkus:</label>
+        <input type="number" step="any" name="pikkus" id="pikkus" value="{{ asukoht.pikkus if asukoht }}" required>
+
+        <button type="submit">{{ 'Uuenda' if asukoht else 'Lisa' }}</button>
+    </form>
+
+    <a href="{{ url_for('asukohad') }}" class="back">← Tagasi nimekirja</a>
+</div>
+</body>
+</html>

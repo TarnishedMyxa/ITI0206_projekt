@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transfers</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .section {
+            background-color: #ffffff;
+            margin: 10px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        a {
+            text-decoration: none;
+        }
+        .add-item-form {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <div class="section">
+	
+	<a href="{{ url_for('dashboard') }}">
+    <button type="button" style="background-color: #6c757d; margin-bottom: 15px; width: 100%; margin-top: 25px;">
+        ← Back to Dashboard
+    </button>
+	</a>
+        <h2>Transfers</h2>
+
+        <!-- Add New Transfer Button -->
+        <a href="{{ url_for('create_transfer') }}">
+            <button>Add New Transfer</button>
+        </a>
+
+        <!-- Transfers Table -->
+        <h3>List of Transfers</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>User</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                    <th>Destination</th>
+                    <th>Transfer Type</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for transfer in transfers %}
+                    <tr>
+                        <td>{{ transfer.idnum }}</td>
+                        <td>{{ transfer.user }}</td>
+                        <td>{{ transfer.created_date }}</td>
+                        <td>
+							{% if transfer.staatus == 1 %}
+								Created
+							{% elif transfer.staatus == 2 %}
+								Kinnitatud
+							{% elif transfer.staatus == 3 %}
+								Lõpetatud
+							{% else %}
+								Deleted
+							{% endif %}
+						</td>
+
+                        <td>{{ transfer.aadress }}</td>
+                        <td>
+							{% if transfer.tyyp == 1 %}
+								Inbound
+							{% elif transfer.tyyp == 2 %}
+								Outbound
+							{% else %}
+								Unknown
+							{% endif %}
+						</td>
+
+                        <td>
+                            <!-- Edit Button: Link to the edit page for this transfer -->
+                            <a href="{{ url_for('update_transfer', idnum=transfer.idnum) }}">
+                                <button>Edit</button>
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>

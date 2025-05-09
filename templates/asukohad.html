@@ -34,45 +34,39 @@
 </head>
 <body>
 
-
-
 <div class="container">
 <a href="{{ url_for('dashboard') }}">
     <button type="button" style="background-color: #6c757d; margin-bottom: 15px; width: 100%; margin-top: 25px;">
         ← Back to Dashboard
     </button>
 	</a>
-  <h2>Item List</h2>
+  <h2>Asukohtade nimekiri</h2>
 
-  <a href="{{ url_for('create_item') }}" class="add">+ Add New Item</a>
+  <a href="{{ url_for('create_asukoht') }}" class="add">+ Lisa uus asukoht</a>
 
   <table>
     <thead>
       <tr>
         <th>ID</th>
-        <th>Nimi</th>
-        <th>Staatus</th>
+        <th>Kood</th>
         <th>Laius</th>
         <th>Pikkus</th>
-        <th>Created At</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      {% for item in items %}
+      {% for asukoht in asukohad %}
       <tr>
-        <td>{{ item.idnum }}</td>
-        <td>{{ item.nimi }}</td>
-        <td>{{ sl[item.staatus] }}</td>
-        <td>{{ item.laius }}</td>
-        <td>{{ item.pikkus }}</td>
-        <td>{{ item.created_at }}</td>
+        <td>{{ asukoht.idnum }}</td>
+        <td>{{ asukoht.kood }}</td>
+        <td>{{ asukoht.laius }}</td>
+        <td>{{ asukoht.pikkus }}</td>
         <td class="actions">
-          <a href="{{ url_for('edit_item', idnum=item.idnum) }}" class="edit">Edit</a>
+          <a href="{{ url_for('edit_asukoht', idnum=asukoht.idnum) }}" class="edit">Edit</a>
           <form method="POST"
-                action="{{ url_for('delete_item', idnum=item.idnum) }}"
+                action="{{ url_for('delete_asukoht', idnum=asukoht.idnum) }}"
                 style="display:inline;"
-                onsubmit="return confirm('Delete item {{ item.nimi }}?');">
+                onsubmit="return confirm('Delete location {{ asukoht.nimi }}?');">
             <button type="submit" class="delete">Delete</button>
           </form>
         </td>
@@ -81,6 +75,7 @@
     </tbody>
   </table>
 </div>
+
 
 </body>
 </html>

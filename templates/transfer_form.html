@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Create Transfer</title>
+    <title>Update Transfer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -73,22 +73,30 @@
 <body>
 <div class="dashboard-container">
     <div class="section">
-        <h2>Create Transfer Order</h2>
+        <h2>Update Transfer Order</h2>
 
-        <form id="transferForm" method="POST" action="{{ url_for('submit_transfer') }}">
+        <form id="transferForm" method="POST" action="{{ url_for('submit_transfer', idnum=transfer.idnum) }}">
             <!-- Transfer Metadata -->
             <div>
                 <label for="transferType">Transfer Type:</label><br>
                 <select id="transferType" name="transfer_type" required>
-                    <option value="outbound">Outbound (OUT)</option>
-                    <option value="inbound">Inbound (IN)</option>
+                    <option value="outbound" {{ 'selected' if transfer.tyyp == 2 else '' }}>Outbound (OUT)</option>
+                    <option value="inbound" {{ 'selected' if transfer.tyyp == 1 else '' }}>Inbound (IN)</option>
                 </select><br>
 
                 <label for="transfer_date">Transfer Date:</label><br>
-                <input type="date" id="transfer_date" name="transfer_date" required><br>
+                <input type="date" id="transfer_date" name="transfer_date" value="{{ transfer.created_date }}" required><br>
 
                 <label for="destination">Destination/Origin:</label><br>
-                <input type="text" id="destination" name="destination" required><br>
+                <input type="text" id="destination" name="destination" value="{{ transfer.aadress }}" required><br>
+
+                <label for="status">Status:</label><br>
+                <select id="status" name="status" required>
+                    <option value="1" {{ 'selected' if transfer.staatus == 1 else '' }}>Created</option>
+                    <option value="2" {{ 'selected' if transfer.staatus == 2 else '' }}>Kinnitatud</option>
+                    <option value="3" {{ 'selected' if transfer.staatus == 3 else '' }}>Lõpetatud</option>
+					<option value="3" {{ 'selected' if transfer.staatus == 4 else '' }}>Deleted</option>
+                </select><br>
             </div>
 
             <!-- Transfer Items Table -->
@@ -102,7 +110,21 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- Items will be added here -->
+                    {% for item in transfer["items"] %}
+                    <tr>
+
+                        <td>
+                            <input type="hidden" name="item_ids[]" value="{{ item.idnum }}">
+                            {{ item.nimi }}
+                        </td>
+                        <td>
+                            <input type="number" name="item_quantities[]" value="{{ item.quantity }}" min="1" required>
+                        </td>
+                        <td>
+                            <button type="button" onclick="removeRow(this)">Remove</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
 
@@ -118,7 +140,7 @@
                 <button type="button" onclick="addItem()">Add Item</button>
             </div>
 
-            <button type="submit" onclick="submitTransfer(event)">Submit Transfer</button>
+            <button type="submit" onclick="submitTransfer(event)">Update Transfer</button>
         </form>
     </div>
 </div>
@@ -152,8 +174,6 @@
         `;
 
         table.appendChild(newRow);
-
-        // Clear quantity field
         document.getElementById('newItemQuantity').value = '';
     }
 
@@ -162,48 +182,46 @@
         row.remove();
     }
 
-    // Handle the form submission via AJAX (using JSON)
     function submitTransfer(event) {
-        event.preventDefault();  // Prevent default form submission
+        event.preventDefault();
 
         const formData = {
             transfer_type: document.getElementById('transferType').value,
             transfer_date: document.getElementById('transfer_date').value,
             destination: document.getElementById('destination').value,
+            status: document.getElementById('status').value,
             items: []
         };
 
         const rows = document.getElementById('itemsTable').getElementsByTagName('tbody')[0].rows;
         for (let row of rows) {
-            const itemId = row.cells[0].children[0].value; // Get item_id from hidden input
-            const quantity = row.cells[1].children[0].value; // Get quantity from input
+            const itemId = row.cells[0].children[0].value;
+            const quantity = row.cells[1].children[0].value;
             formData.items.push({ item_id: itemId, quantity: quantity });
         }
 
-        // Send the data as JSON using fetch
-        fetch("{{ url_for('submit_transfer') }}", {
+        fetch("{{ url_for('submit_transfer', idnum=transfer.idnum) }}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
-            body: JSON.stringify(formData), // Convert the data to JSON
+            body: JSON.stringify(formData),
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                alert("Transfer submitted successfully!");
-                window.location.href = "/transfers"; // Redirect to transfer page
+                alert("Transfer updated successfully!");
+                window.location.href = "/transfers";
             } else {
                 alert("Error: " + data.error);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            alert('There was an error submitting the transfer.');
+            alert('There was an error updating the transfer.');
         });
     }
 </script>
-
 
 </body>
 </html>

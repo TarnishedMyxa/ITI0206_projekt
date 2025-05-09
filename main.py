@@ -118,9 +118,9 @@ def register_user():
 def dashboard():
     if 'username' not in session:
         return redirect(url_for('login'))
-    user_type="admin"
-    ua=["hr","saabumised"]
-    return render_template('dashboard.html', user_type=user_type, user_access=ua)
+
+    ua=["1","2","3","4"]
+    return render_template('dashboard.html', user_access=ua)
 
 
 @app.route('/usermanagement/', methods=['GET', 'POST'])
@@ -139,7 +139,7 @@ def usermanagement():
                 newl.append((selected_user,i))
 
         db.del_userloads(db_creds, selected_user)
-        print(newl)
+
         db.add_userloads(db_creds, newl)
 
         users = db.get_users(db_creds)
@@ -148,7 +148,6 @@ def usermanagement():
 
     else:
         username=session['username']
-
 
         users=db.get_users(db_creds)
         lubad=db.get_load(db_creds)
@@ -181,8 +180,17 @@ def items():
 
 
     items=db.get_all_items(db_creds)
+    #items came in as tuples, convert to dicts
+    items = [dict(zip(['idnum', 'nimi', 'staatus', 'laius', 'pikkus', "created_at"], item)) for item in items]
 
-    return render_template('items.html',  items=items)
+    status_labels = {
+        1: "Active",
+        2: "Inactive",
+        3: "In Maintenance",
+        4: "Decommissioned"
+    }
+
+    return render_template('items.html',  items=items, sl=status_labels)
 
 @app.route('/items/create', methods=['GET','POST'])
 def create_item():
@@ -196,7 +204,7 @@ def create_item():
         laius   = request.form['laius']
         pikkus  = request.form['pikkus']
         # Insert into DB
-        db.add_item(db_creds, nimi, staatus, laius, pikkus)
+        db.add_item(db_creds, (nimi, staatus, laius, pikkus))
         return redirect(url_for('items'))
     # GET → show empty form
     return render_template('item_form.html', item=None)
@@ -206,13 +214,9 @@ def edit_item(idnum):
     if 'username' not in session:
         return redirect(url_for('login'))
     # (Access check)
-    item = db.get_item(db_creds, idnum)
+    item = db.get_item(db_creds, str(idnum))
     if request.method == 'POST':
-        item.nimi    = request.form['nimi']
-        item.staatus = request.form['staatus']
-        item.laius   = request.form['laius']
-        item.pikkus  = request.form['pikkus']
-        db.update_item(db_creds, item)
+        db.update_item(db_creds, (idnum, request.form['nimi'], request.form['staatus'], request.form['laius'], request.form['pikkus'] ))
         return redirect(url_for('items'))
     # GET → show form prefilled
     return render_template('item_form.html', item=item)
@@ -225,8 +229,57 @@ def delete_item(idnum):
     db.delete_item(db_creds, idnum)
     return redirect(url_for('items'))
 
+@app.route('/asukohad/')
+def asukohad():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    username = session['username']
+    ul = db.get_userload(db_creds, username)
+
+    access = any(l[1] in [1, 3, 4] for l in ul)
+    if not access:
+        flash('You do not have access to this page.', 'error')
+        return redirect(url_for('dashboard'))
+
+    asukohad = db.get_all_asukohad(db_creds)
+    # asukohad came in as tuples, convert to dicts
+    asukohad = [dict(zip(['idnum', 'kood', 'laius', "pikkus"], asukoht)) for asukoht in asukohad]
+
+    return render_template('asukohad.html', asukohad=asukohad)
 
 
+@app.route('/asukohad/edit/<int:idnum>', methods=['GET', 'POST'])
+def edit_asukoht(idnum):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Access check)
+    asukoht = db.get_asukoht(db_creds, str(idnum))
+    if request.method == 'POST':
+        db.update_asukoht(db_creds, (idnum, request.form['kood'], request.form['laius'], request.form['pikkus']))
+        return redirect(url_for('asukohad'))
+    # GET → show form prefilled
+    return render_template('asukoht_form.html', asukoht=asukoht)
+
+@app.route('/asukohad/create', methods=['GET', 'POST'])
+def create_asukoht():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Optionally repeat your access check here)
+    if request.method == 'POST':
+        # Insert into DB
+        db.add_asukoht(db_creds, (request.form['kood'], request.form['laius'], request.form['pikkus']))
+        return redirect(url_for('asukohad'))
+    # GET → show empty form
+    return render_template('asukoht_form.html', asukoht=None)
+
+@app.route('/asukohad/delete/<int:idnum>', methods=['POST'])
+def delete_asukoht(idnum):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Access check)
+    db.delete_asukoht(db_creds, idnum)
+    return redirect(url_for('asukohad'))
 
 
 @app.route('/view/')
@@ -245,24 +298,97 @@ def create_transfer():
     inventory = []
     selected_items = [item for item in inventory if str(item["idnum"]) in selected_ids]
 
+    items= db.get_all_items(db_creds)
+    # items came in as tuples, convert to dicts
+    items = [dict(zip(['idnum', 'nimi', 'staatus', 'laius', 'pikkus', "created_at"], item)) for item in items]
+
     # Redirect or render another page showing the transfer order creation
-    return render_template('create_transfer.html', selected_items=selected_items)
+    return render_template('create_transfer.html', items=items, selected_items=selected_items)
 
 @app.route('/submit_transfer/', methods=['POST'])
 def submit_transfer():
-    # Process the transfer order
-    transfer_data = request.form.to_dict()
+    #get the json
+    data = request.get_json()
 
-    flash('Transfer order created successfully!', 'success')
-    return redirect(url_for('view'))
+    # Extract the relevant fields from the JSON   {'transfer_type': 'outbound', 'transfer_date': '2025-05-20', 'destination': 'fdnsajklsdn', 'items': [{'item_id': '2', 'quantity': '123'}]}
 
-@app.route('/move/')
-def move():
+    transfer_type = data['transfer_type']
+    transfer_date = data['transfer_date']
+    destination = data['destination']
+    items = data['items']
+
+    if transfer_type == 'inbound':
+        tt = 1
+    elif transfer_type == 'outbound':
+        tt = 2
+
+    # Convert items to a list of tuples
+    items_list = [(item['item_id'], item['quantity']) for item in items]
+    # Insert the transfer into the database   #(user, created_date, staatus, aadress, tyyp)
+    db.add_transfer(db_creds, (session['username'], transfer_date, "1", destination, str(tt)))
+    # Get the last inserted transfer ID
+    last_transfer_id = db.get_last_transfer_id(db_creds)
+
+    #add lines
+    for item in items_list:
+        # Check if the item exists in the database
+        item_id = item[0]
+        quantity = item[1]
+
+        # Add the transfer line to the database
+        db.add_transfer_line(db_creds, (str(last_transfer_id), str(item_id), str(quantity)))
+
+    return jsonify({'success': True})
+
+@app.route('/transfers/')
+def transfers():
     if 'username' not in session:
         return redirect(url_for('login'))
-    user_type="admin"
-    ua=["hr","saabumised"]
-    return render_template('move.html', user_type=user_type, user_access=ua)
+
+    trans=db.get_all_transfers(db_creds)
+    # transfers came in as tuples, convert to dicts  #idnum', 'user', 'created_date', 'staatus', 'aadress', 'tyyp
+    trfs = [dict(zip(['idnum', 'user', 'created_date', 'staatus', 'aadress', 'tyyp'], transfer)) for transfer in trans]
+
+    return render_template('transfers.html', transfers=trfs)
+
+
+@app.route('/transfers/edit/<int:idnum>', methods=['GET', 'POST'])
+def update_transfer(idnum):
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    # (Access check)
+    transfer = db.get_transfer(db_creds, str(idnum))[0]
+
+    t_lines= db.get_transfer_lines(db_creds, str(idnum))
+
+
+    t={
+        "idnum": transfer[0],
+        "user": transfer[1],
+        "created_date": transfer[2],
+        "staatus": transfer[3],
+        "aadress": transfer[4],
+        "tyyp": transfer[5],
+        "items": [dict(zip(['idnum', 'trans_id', 'item_id', 'quantity', "nimi"], line)) for line in t_lines]
+    }
+
+    items= db.get_all_items(db_creds)
+    # items came in as tuples, convert to dicts
+    items = [dict(zip(['idnum', 'nimi', 'staatus', 'laius', 'pikkus', "created_at"], item)) for item in items]
+    if request.method == 'POST':
+        db.update_transfer(db_creds, (idnum, request.form['transfer_date'], request.form['staatus'], request.form['aadress'], request.form['tyyp']))
+        return redirect(url_for('transfers'))
+    # GET → show form prefilled
+    return render_template('transfer_form.html', transfer=t, items=items)
+
+@app.route('/move')
+def move():
+    return 0
+
+@app.route('/reports')
+def reports():
+    return 0
+
 
 if __name__ == '__main__':
     if ENVIROP=='PROD':

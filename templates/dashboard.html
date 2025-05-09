@@ -66,39 +66,40 @@
 </div>
 
     <div class="dashboard-container">
-        {% if 'hr' in user_access %}
+        {% if '4' in user_access %}
+		<a href="{{ url_for('usermanagement') }}" class="section-link">
             <div class="section">
-                <div class="section-title">HR</div>
-                <p>HR user has access to HR section.</p>
+                <div class="section-title">User Management</div>
+                <p>Ligipääsud</p>
             </div>
+		</a>
         {% endif %}
         
-        {% if 'saabumised' in user_access %}
+        {% if '1' in user_access %}
+		<a href="{{ url_for('transfers') }}" class="section-link">
             <div class="section">
-                <div class="section-title">Saabumised</div>
-                <p>User has access to Saabumised section.</p>
+                <div class="section-title">Transfers</div>
+                <p>Inbound/Outbound transfers</p>
             </div>
-        {% endif %}
-
-        {% if 'kvaliteedikontroll' in user_access %}
-            <div class="section">
-                <div class="section-title">Kvaliteedikontroll</div>
-                <p>User has access to Kvaliteedikontroll section.</p>
-            </div>
+			</a>
         {% endif %}
         
-        {% if 'ladu' in user_access %}
+        {% if '2' in user_access %}
+		<a href="{{ url_for('move') }}" class="section-link">
             <div class="section">
                 <div class="section-title">Ladu</div>
-                <p>User has access to Ladu section.</p>
+                <p>Kauba liikumine laos</p>
             </div>
+			</a>
         {% endif %}
 
-        {% if 'liikumine' in user_access %}
+        {% if '3' in user_access %}
+		<a href="{{ url_for('reports') }}" class="section-link">
             <div class="section">
-                <div class="section-title">Liikumine</div>
-                <p>User has access to Liikumine section.</p>
+                <div class="section-title">Aruanded</div>
+                <p>Laoseis, käive</p>
             </div>
+			</a>
         {% endif %}
         
         {% if user_access|length == 0 %}
